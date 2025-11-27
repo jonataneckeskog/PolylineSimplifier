@@ -28,6 +28,10 @@ namespace PolylineSimplifier
             Func<T, float> getX,
             Func<T, float> getY)
         {
+            if (points is null) throw new ArgumentNullException(nameof(points));
+            if (getX is null) throw new ArgumentNullException(nameof(getX));
+            if (getY is null) throw new ArgumentNullException(nameof(getY));
+
             if (points.Count < 3)
                 return [.. points];
 
