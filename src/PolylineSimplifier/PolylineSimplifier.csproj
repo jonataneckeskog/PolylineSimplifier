@@ -4,9 +4,35 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <!-- NuGet metadata -->
+    <PackageId>PolylineSimplifier</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Jonatan Eckeskog</Authors>
+    <Description>An efficient .NET library for simplifying 2D polylines using the Ramer-Douglas-Peucker algorithm.</Description>
+    <PackageProjectUrl>https://github.com/jonataneckeskog/PolylineSimplifier</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/jonataneckeskog/PolylineSimplifier</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>polyline simplification rdp geometry</PackageTags>
+
+    <!-- README inclusion -->
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <!-- Symbols & SourceLink -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+    <!-- Deterministic builds -->
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
+  <ItemGroup>
+    <!-- Include README from root -->
+    <None Include="../../README.md" Pack="true" PackagePath="" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
 </Project>
