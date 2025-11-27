@@ -5,9 +5,29 @@ public class RamerDouglasPeucker2DTests
     // Simple point record for testing
     private record Point(float X, float Y);
 
+    // Shared random instance for deterministic tests
+    private readonly Random _random = new(42);
+
     // Helper functions for the generic API
     private static float GetX(Point p) => p.X;
     private static float GetY(Point p) => p.Y;
+
+    // Helper to generate noisy diagonal line points
+    private List<Point> GenerateNoisyDiagonalPoints(int count, float noiseAmplitude, int? spikeInterval = null, float spikeHeight = 0)
+    {
+        var points = new List<Point>();
+        for (int i = 0; i < count; i++)
+        {
+            float x = i;
+            float y = i + (float)(_random.NextDouble() - 0.5) * noiseAmplitude;
+
+            if (spikeInterval.HasValue && i % spikeInterval.Value == spikeInterval.Value / 2)
+                y += spikeHeight;
+
+            points.Add(new Point(x, y));
+        }
+        return points;
+    }
 
     #region Edge Cases
 
@@ -283,6 +303,36 @@ public class RamerDouglasPeucker2DTests
 
         // Should keep corners: (0,0), (10,0), (10,10), (0,10), (0,0)
         Assert.Equal(5, result.Count);
+    }
+
+    [Fact]
+    public void Simplify_NoisyLine_RemovesMidPoints()
+    {
+        var points = GenerateNoisyDiagonalPoints(count: 1000, noiseAmplitude: 2); // y ≈ x with ±1 noise
+
+        // Epsilon of 5 should tolerate the ±1 noise and simplify to a straight line
+        var result = RamerDouglasPeucker2D.Simplify(points, 5.0f, GetX, GetY);
+
+        Assert.True(result.Count <= 100, $"Expected ≤100 points, got {result.Count}");
+        Assert.True(result.Count >= 2, "Should keep at least endpoints");
+
+        Assert.Equal(points[0], result[0]);
+        Assert.Equal(points[^1], result[^1]);
+    }
+
+    [Fact]
+    public void Simplify_NoisyLineWithSpikes_KeepsSomeMidpoints()
+    {
+        // y ≈ x with ±1 noise, plus significant spikes every 100 points
+        var points = GenerateNoisyDiagonalPoints(count: 1000, noiseAmplitude: 2, spikeInterval: 100, spikeHeight: 20);
+
+        var result = RamerDouglasPeucker2D.Simplify(points, 5.0f, GetX, GetY);
+
+        // Should keep endpoints + the ~10 spike points (roughly)
+        Assert.True(result.Count >= 10, $"Expected ≥10 points for spikes, got {result.Count}");
+        Assert.True(result.Count <= 50, $"Expected ≤50 points, got {result.Count}");
+        Assert.Equal(points[0], result[0]);
+        Assert.Equal(points[^1], result[^1]);
     }
 
     #endregion
