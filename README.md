@@ -17,13 +17,13 @@ using PolylineSimplifier;
 
 public record Point(float X, float Y);
 
-var points = new List<Point>
+List<Point> points = new List<Point>
 {
     new(0, 0), new(1, 0.1f), new(2, -0.1f), new(3, 5), new(4, 6),
     new(5, 7), new(6, 8.1f), new(7, 9), new(8, 9), new(9, 9)
 };
 
-var simplified = RamerDouglasPeucker2D.Simplify(
+List<Point> simplified = RamerDouglasPeucker2D.Simplify(
     points,
     epsilon: 1.0f,
     getX: p => p.X,
