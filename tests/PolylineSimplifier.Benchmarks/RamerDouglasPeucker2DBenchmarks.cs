@@ -1,5 +1,4 @@
 using BenchmarkDotNet.Attributes;
-using PolylineSimplifier;
 
 namespace PolylineSimplifier.Benchmarks;
 
@@ -9,6 +8,7 @@ public class RamerDouglasPeucker2DBenchmarks
     private List<(float X, float Y)> _smallPolyline = null!;
     private List<(float X, float Y)> _mediumPolyline = null!;
     private List<(float X, float Y)> _largePolyline = null!;
+    private List<(float X, float Y)> _extraLargePolyline = null!;
 
     [GlobalSetup]
     public void Setup()
@@ -16,6 +16,7 @@ public class RamerDouglasPeucker2DBenchmarks
         _smallPolyline = GeneratePolyline(100);
         _mediumPolyline = GeneratePolyline(1_000);
         _largePolyline = GeneratePolyline(10_000);
+        _extraLargePolyline = GeneratePolyline(100_000);
     }
 
     private static List<(float X, float Y)> GeneratePolyline(int count)
@@ -51,6 +52,16 @@ public class RamerDouglasPeucker2DBenchmarks
     {
         return RamerDouglasPeucker2D.Simplify(
             _largePolyline,
+            epsilon: 1.0f,
+            p => p.X,
+            p => p.Y);
+    }
+
+    [Benchmark]
+    public List<(float X, float Y)> Simplify_ExtraLarge_100000Points()
+    {
+        return RamerDouglasPeucker2D.Simplify(
+            _extraLargePolyline,
             epsilon: 1.0f,
             p => p.X,
             p => p.Y);
