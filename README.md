@@ -1,6 +1,6 @@
 # PolylineSimplifier
 
-An efficient .NET library for simplifying 2D polylines using the Ramer-Douglas-Peucker algorithm.
+An efficient .NET library for simplifying 2D polylines using the Ramer-Douglas-Peucker algorithm. It reduces the number of points in a curve while preserving its visual shape.
 
 ## Usage
 
@@ -32,23 +32,24 @@ List<Point> simplified = RamerDouglasPeucker2D.Simplify(
 
 ### Parameters
 
-| Parameter | Description |
-|-----------|-------------|
-| `points` | The input polyline as a list of points |
+| Parameter | Description                                                                   |
+| --------- | ----------------------------------------------------------------------------- |
+| `points`  | The input polyline as a list of points                                        |
 | `epsilon` | Maximum perpendicular distance tolerance. Larger values = more simplification |
-| `getX` | Function to extract the X coordinate from a point |
-| `getY` | Function to extract the Y coordinate from a point |
+| `getX`    | Function to extract the X coordinate from a point                             |
+| `getY`    | Function to extract the Y coordinate from a point                             |
 
 ## Benchmarks
 
-Measured on AMD Ryzen 5 7600 Processor:
+Measured on an Intel Core i5-9400F Processor:
 
-| Method                           | epsilon | Mean          | Allocated |
-|--------------------------------- |--------:|--------------:|----------:|
-| Simplify_Small_100Points         | 1       |      1.912 μs |   2.27 KB |
-| Simplify_Medium_1000Points       | 1       |     32.363 μs |  17.21 KB |
-| Simplify_Large_10000Points       | 1       |    962.689 μs | 138.07 KB |
-| Simplify_ExtraLarge_100000Points | 1       | 23,547.090 μs | 2146.2 KB |
+| Method        |     Mean | Allocated |
+| ------------- | -------: | --------: |
+| 100 Points    |  2.80 μs |   2.11 KB |
+| 1000 Points   |  65.6 μs |   15,6 KB |
+| 10000 Points  |  1260 μs |    143 KB |
+| 100000 Points | 26500 μs |   1440 KB |
+<small>Note: Epsilon = 1.0 for all benchmarks. A larger epsilon generally decreases the execution time an allocates less memory.</small>
 
 ### Running Benchmarks
 
