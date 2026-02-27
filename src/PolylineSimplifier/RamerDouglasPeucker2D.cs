@@ -32,103 +32,109 @@ public static class RamerDouglasPeucker2D
         ArgumentNullException.ThrowIfNull(getX);
         ArgumentNullException.ThrowIfNull(getY);
 
-        if (points.Count < 3)
+        int count = points.Count;
+
+        if (count < 3)
             return [.. points];
 
         if (!float.IsFinite(epsilon) || epsilon <= 0)
             return [.. points];
 
-        // Use squared epsilon to avoid sqrt in distance calculations
+        // Use squared epsilon to avoid sqrt in distance 
         float epsilonSquared = epsilon * epsilon;
 
-        // Use a boolean array to mark which points to keep (avoids allocating lists in recursion)
-        bool[] keepPoint = new bool[points.Count];
+        // Cache coordinates to eliminate delegate overhead
+        var coords = new (float x, float y)[count];
+        for (int i = 0; i < count; i++)
+        {
+            coords[i] = (getX(points[i]), getY(points[i]));
+        }
+
+        bool[] keepPoint = new bool[count];
         keepPoint[0] = true;
-        keepPoint[points.Count - 1] = true;
+        keepPoint[count - 1] = true;
 
-        SimplifySection(points, 0, points.Count - 1, epsilonSquared, keepPoint, getX, getY);
+        // Iterative approach using a Stack
+        var stack = new Stack<(int startIndex, int endIndex)>();
+        stack.Push((0, count - 1));
 
-        List<T> result = new();
-        for (int i = 0; i < points.Count; i++)
+        while (stack.Count > 0)
+        {
+            var (startIndex, endIndex) = stack.Pop();
+            if (endIndex - startIndex < 2)
+                continue;
+
+            float x1 = coords[startIndex].x;
+            float y1 = coords[startIndex].y;
+            float x2 = coords[endIndex].x;
+            float y2 = coords[endIndex].y;
+
+            float dx = x2 - x1;
+            float dy = y2 - y1;
+            float lineLengthSquared = dx * dx + dy * dy;
+
+            float maxDistanceSquared = -1f;
+            int maxIndex = startIndex;
+
+            if (lineLengthSquared < float.Epsilon)
+            {
+                for (int i = startIndex + 1; i < endIndex; i++)
+                {
+                    float px = coords[i].x - x1;
+                    float py = coords[i].y - y1;
+                    float distSquared = px * px + py * py;
+
+                    if (distSquared > maxDistanceSquared)
+                    {
+                        maxDistanceSquared = distSquared;
+                        maxIndex = i;
+                    }
+                }
+            }
+            else
+            {
+                float crossTerm = x1 * y2 - x2 * y1;
+
+                for (int i = startIndex + 1; i < endIndex; i++)
+                {
+                    float px = coords[i].x;
+                    float py = coords[i].y;
+
+                    float numerator = crossTerm + dx * py - dy * px;
+                    float distSquared = numerator * numerator / lineLengthSquared;
+
+                    if (distSquared > maxDistanceSquared)
+                    {
+                        maxDistanceSquared = distSquared;
+                        maxIndex = i;
+                    }
+                }
+            }
+
+            if (maxDistanceSquared > epsilonSquared)
+            {
+                keepPoint[maxIndex] = true;
+
+                // Push right side first, then left side, so the left side is processed first 
+                stack.Push((maxIndex, endIndex));
+                stack.Push((startIndex, maxIndex));
+            }
+        }
+
+        // Pre-calculate exact capacity needed for the result list to avoid allocations
+        int keptCount = 0;
+        for (int i = 0; i < count; i++)
+        {
+            if (keepPoint[i]) keptCount++;
+        }
+
+        List<T> result = new(keptCount);
+        for (int i = 0; i < count; i++)
         {
             if (keepPoint[i])
                 result.Add(points[i]);
         }
 
         return result;
-    }
-
-    /// <summary>
-    /// Recursively processes a section of the polyline, marking points to keep.
-    /// </summary>
-    private static void SimplifySection<T>(
-        List<T> points,
-        int startIndex,
-        int endIndex,
-        float epsilonSquared,
-        bool[] keepPoint,
-        Func<T, float> getX,
-        Func<T, float> getY)
-    {
-        if (endIndex - startIndex < 2)
-            return;
-
-        T startPoint = points[startIndex];
-        T endPoint = points[endIndex];
-
-        float x1 = getX(startPoint);
-        float y1 = getY(startPoint);
-        float x2 = getX(endPoint);
-        float y2 = getY(endPoint);
-
-        float dx = x2 - x1;
-        float dy = y2 - y1;
-        float lineLengthSquared = dx * dx + dy * dy;
-
-        float maxDistanceSquared = 0;
-        int maxIndex = startIndex;
-
-        if (lineLengthSquared < float.Epsilon)
-        {
-            for (int i = startIndex + 1; i < endIndex; i++)
-            {
-                float px = getX(points[i]) - x1;
-                float py = getY(points[i]) - y1;
-                float distSquared = px * px + py * py;
-
-                if (distSquared > maxDistanceSquared)
-                {
-                    maxDistanceSquared = distSquared;
-                    maxIndex = i;
-                }
-            }
-        }
-        else
-        {
-            float crossTerm = x1 * y2 - x2 * y1;
-
-            for (int i = startIndex + 1; i < endIndex; i++)
-            {
-                float px = getX(points[i]);
-                float py = getY(points[i]);
-
-                // Perpendicular distance squared: (crossTerm + dx*py - dy*px)^2 / lineLengthSquared
-                float numerator = crossTerm + dx * py - dy * px;
-                float distSquared = numerator * numerator / lineLengthSquared;
-
-                if (distSquared > maxDistanceSquared)
-                {
-                    maxDistanceSquared = distSquared;
-                    maxIndex = i;
-                }
-            }
-        }
-
-        if (maxDistanceSquared > epsilonSquared)
-        {
-            keepPoint[maxIndex] = true;
-            SimplifySection(points, startIndex, maxIndex, epsilonSquared, keepPoint, getX, getY);
-            SimplifySection(points, maxIndex, endIndex, epsilonSquared, keepPoint, getX, getY);
-        }
     }
 }
