@@ -9,7 +9,7 @@
 
     <!-- NuGet metadata -->
     <PackageId>PolylineSimplifier</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>Jonatan Eckeskog</Authors>
     <Description>An efficient .NET library for simplifying 2D polylines using the Ramer-Douglas-Peucker algorithm.</Description>
     <PackageProjectUrl>https://github.com/jonataneckeskog/PolylineSimplifier</PackageProjectUrl>
