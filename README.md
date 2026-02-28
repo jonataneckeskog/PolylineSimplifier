@@ -50,7 +50,7 @@ Measured on an AMD Ryzen 5 7600X Processor:
 | 10000 Points  |   757 μs |    143 KB |
 | 100000 Points | 17200 μs |   1440 KB |
 
-<small>Note: Epsilon = 1.0 for all benchmarks. A larger epsilon generally decreases the execution time an allocates less memory.</small>
+_Note: Epsilon = 1.0 for all benchmarks. A larger epsilon generally decreases the execution time and allocates less memory._
 
 ### Running Benchmarks
 
